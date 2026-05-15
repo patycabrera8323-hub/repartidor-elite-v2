@@ -84,7 +84,7 @@ export function WelcomeScreen({ onComplete }: { onComplete: () => void }) {
               className="relative mb-8"
             >
               <div className="w-24 h-24 bg-gradient-to-br from-cyan-500 to-blue-700 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-cyan-500/20 p-4 border border-white/20">
-                <img src="/logo repartidor.png" alt="Logo" className="w-full h-full object-contain brightness-0 invert" />
+                <img src="/logo-repartidor.png" alt="Logo" className="w-full h-full object-contain brightness-0 invert" />
               </div>
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
