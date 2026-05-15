@@ -5,7 +5,7 @@ import {defineConfig, loadEnv} from 'vite';
 
 import { cloudflare } from "@cloudflare/vite-plugin";
 
-import { VitePWA } from 'vite-plugin-pwa';
+
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
@@ -14,52 +14,6 @@ export default defineConfig(({mode}) => {
       react(), 
       tailwindcss(), 
       cloudflare(),
-      VitePWA({
-        registerType: 'autoUpdate',
-        injectRegister: 'inline',
-        manifestFilename: 'manifest.json',
-        workbox: {
-          skipWaiting: true,
-          clientsClaim: true,
-        },
-        manifest: {
-          name: 'Repartidor PRO Mi Colonia',
-          short_name: 'Repartidor PRO',
-          description: 'Entregas Rápidas y Seguras',
-          theme_color: '#0f172a',
-          background_color: '#0f172a',
-          display: 'standalone',
-          icons: [
-            {
-              src: '/icon-192.png',
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'any'
-            },
-            {
-              src: '/icon-512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any'
-            },
-            {
-              src: '/icon-maskable.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'maskable'
-            }
-          ]
-        },
-        workbox: {
-          swDest: 'sw.js',
-          skipWaiting: true,
-          clientsClaim: true,
-        },
-        devOptions: {
-          enabled: true,
-          type: 'module'
-        }
-      })
     ],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
