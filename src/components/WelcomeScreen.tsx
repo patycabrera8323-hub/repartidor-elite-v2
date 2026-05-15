@@ -91,10 +91,10 @@ export function WelcomeScreen({ onComplete }: { onComplete: () => void }) {
             >
               <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-[0.9]">
                 REPARTIDOR<br/>
-                <span className="text-green-500">ELITE PRO</span>
+                <span className="text-green-500">PRO</span>
               </h1>
-              <p className="text-white/40 text-[10px] font-medium tracking-[0.2em] uppercase leading-relaxed max-w-[280px] mx-auto">
-                Rendimiento Superior. <span className="text-white/60 font-black">Diseño Minimalista.</span>
+              <p className="text-white/60 text-[11px] font-bold px-6 leading-relaxed uppercase tracking-widest mt-4">
+                Si gustas puedes usarla <span className="text-green-500">instalándola</span> o directamente en la <span className="text-green-500">web</span> ahorrando memoria en tu celular.
               </p>
             </motion.div>
 
@@ -125,9 +125,9 @@ export function WelcomeScreen({ onComplete }: { onComplete: () => void }) {
               <div className="absolute inset-0 bg-green-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
             </button>
             
-            <div className="mt-8 flex flex-col items-center gap-3 opacity-20 hover:opacity-40 transition-opacity">
-               <img src="/searmo-logo.png" alt="Searmo" className="h-3 brightness-0 invert" />
-               <p className="text-[6px] font-black uppercase tracking-[0.5em] text-white">Advanced Logistics Unit</p>
+            <div className="mt-8 flex flex-col items-center gap-3 opacity-30 hover:opacity-60 transition-opacity">
+               <img src="/searmo-logo.png" alt="Searmo" className="h-4 w-auto object-contain brightness-0 invert" />
+               <p className="text-[7px] font-black uppercase tracking-[0.5em] text-white">Powered by Searmo</p>
             </div>
           </motion.div>
         </motion.div>

@@ -119,8 +119,8 @@ export default function App() {
             <MenuIcon size={22} strokeWidth={1.5} />
           </button>
           <div>
-            <p className="text-[7px] font-black uppercase tracking-[0.4em] text-green-500 leading-none mb-1">Status: Active</p>
-            <h1 className="text-xs font-bold tracking-tight text-white/90">{userData?.name || 'Driver Elite'}</h1>
+            <p className="text-[7px] font-black uppercase tracking-[0.4em] text-green-500 leading-none mb-1">Estado: Activo</p>
+            <h1 className="text-xs font-bold tracking-tight text-white/90">{userData?.name || 'Usuario'}</h1>
           </div>
         </div>
         <div className="flex items-center gap-6">
@@ -165,7 +165,7 @@ export default function App() {
         {/* Orders List */}
         <section className="space-y-6">
           <div className="flex items-center justify-between px-2">
-             <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-white/20">Active Tasks ({orders.length})</h3>
+             <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-white/20">Tareas Activas ({orders.length})</h3>
           </div>
 
           <div className="space-y-4">
@@ -256,12 +256,12 @@ export default function App() {
               </div>
               <div className="flex-1 space-y-2">
                  <SideBtn icon={<Truck />} label="Terminal" active={view === 'dashboard'} onClick={() => { setView('dashboard'); setSidebarOpen(false); }} />
-                 <SideBtn icon={<History />} label="Journal" active={view === 'history'} onClick={() => { setView('history'); setSidebarOpen(false); }} />
-                 <SideBtn icon={<Wallet />} label="Earnings" active={view === 'profile'} onClick={() => { setView('profile'); setSidebarOpen(false); }} />
-                 <SideBtn icon={<Settings />} label="Settings" active={false} />
+                 <SideBtn icon={<History />} label="Historial" active={view === 'history'} onClick={() => { setView('history'); setSidebarOpen(false); }} />
+                 <SideBtn icon={<Wallet />} label="Ganancias" active={view === 'profile'} onClick={() => { setView('profile'); setSidebarOpen(false); }} />
+                 <SideBtn icon={<Settings />} label="Configuración" active={false} />
               </div>
               <button onClick={handleLogout} className="mt-auto flex items-center gap-4 p-4 rounded-2xl bg-white/5 text-white/40 font-black uppercase tracking-[0.2em] text-[8px] hover:bg-red-500/10 hover:text-red-500 transition-all">
-                <LogOut size={16} /> Logout System
+                <LogOut size={16} /> Cerrar Sesión
               </button>
             </motion.aside>
           </>

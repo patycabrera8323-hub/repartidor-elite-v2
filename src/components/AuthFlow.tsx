@@ -40,7 +40,10 @@ export default function AuthFlow({ onAuthenticated }: { onAuthenticated: (user: 
         onAuthenticated(cred.user);
       }
     } catch (err: any) {
-      setError(err.message === 'Firebase: Error (auth/user-not-found).' ? 'Usuario no encontrado' : 'Error de acceso');
+      if (err.code === 'auth/user-not-found') setError('Usuario no encontrado');
+      else if (err.code === 'auth/wrong-password') setError('Contraseña incorrecta');
+      else if (err.code === 'auth/email-already-in-use') setError('El correo ya está registrado');
+      else setError('Error al intentar acceder');
     } finally {
       setLoading(false);
     }
@@ -49,7 +52,6 @@ export default function AuthFlow({ onAuthenticated }: { onAuthenticated: (user: 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8 overflow-hidden font-sans">
       
-      {/* Background Ambience */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-[radial-gradient(circle_at_center,rgba(34,197,94,0.05)_0%,transparent_70%)]" />
       </div>
@@ -61,13 +63,13 @@ export default function AuthFlow({ onAuthenticated }: { onAuthenticated: (user: 
       >
         <div className="text-center mb-12">
            <div className="inline-block px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full mb-6">
-              <p className="text-[7px] font-black uppercase tracking-[0.4em] text-green-500">Security Access</p>
+              <p className="text-[7px] font-black uppercase tracking-[0.4em] text-green-500">Acceso de Seguridad</p>
            </div>
            <h2 className="text-4xl font-black tracking-tighter uppercase leading-none mb-2">
-             {mode === 'login' ? 'Welcome Back' : 'Join Elite'}
+             {mode === 'login' ? 'Bienvenido' : 'Únete a Pro'}
            </h2>
            <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest leading-relaxed">
-             {mode === 'login' ? 'Please authorize to continue' : 'Create your driver account'}
+             {mode === 'login' ? 'Inicia sesión para continuar' : 'Crea tu cuenta de repartidor'}
            </p>
         </div>
 
@@ -78,14 +80,14 @@ export default function AuthFlow({ onAuthenticated }: { onAuthenticated: (user: 
                 initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                 className="space-y-4"
               >
-                <Input icon={<User size={16}/>} type="text" placeholder="Full Name" value={form.name} onChange={(v) => setForm({...form, name: v})} />
-                <Input icon={<Smartphone size={16}/>} type="tel" placeholder="Phone Number" value={form.phone} onChange={(v) => setForm({...form, phone: v})} />
+                <Input icon={<User size={16}/>} type="text" placeholder="Nombre Completo" value={form.name} onChange={(v) => setForm({...form, name: v})} />
+                <Input icon={<Smartphone size={16}/>} type="tel" placeholder="Número de Teléfono" value={form.phone} onChange={(v) => setForm({...form, phone: v})} />
               </motion.div>
             )}
           </AnimatePresence>
 
-          <Input icon={<Mail size={16}/>} type="email" placeholder="Email Address" value={form.email} onChange={(v) => setForm({...form, email: v})} />
-          <Input icon={<Lock size={16}/>} type="password" placeholder="Access Code" value={form.password} onChange={(v) => setForm({...form, password: v})} />
+          <Input icon={<Mail size={16}/>} type="email" placeholder="Correo Electrónico" value={form.email} onChange={(v) => setForm({...form, email: v})} />
+          <Input icon={<Lock size={16}/>} type="password" placeholder="Contraseña de Acceso" value={form.password} onChange={(v) => setForm({...form, password: v})} />
 
           {error && <p className="text-[8px] text-red-500 font-black uppercase text-center tracking-widest">{error}</p>}
 
@@ -94,7 +96,7 @@ export default function AuthFlow({ onAuthenticated }: { onAuthenticated: (user: 
             disabled={loading}
             className="w-full py-5 bg-white text-black rounded-full font-black uppercase tracking-[0.3em] text-[10px] mt-6 hover:bg-green-500 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
           >
-            {loading ? <Loader2 size={16} className="animate-spin" /> : (mode === 'login' ? 'Sign In' : 'Create Account')}
+            {loading ? <Loader2 size={16} className="animate-spin" /> : (mode === 'login' ? 'Entrar al Sistema' : 'Crear mi Cuenta')}
             {!loading && <ArrowRight size={14} />}
           </button>
         </form>
@@ -104,7 +106,7 @@ export default function AuthFlow({ onAuthenticated }: { onAuthenticated: (user: 
             onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
             className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30 hover:text-green-500 transition-colors"
           >
-            {mode === 'login' ? "Don't have an account? Register" : "Already have an account? Login"}
+            {mode === 'login' ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia Sesión"}
           </button>
         </div>
       </motion.div>
