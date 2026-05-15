@@ -6,11 +6,11 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <title>Repartidor ELITE</title>
     <script>
-      // Force reload if version changes
+      // Clean up old service workers
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
           for(let registration of registrations) {
-            registration.update();
+            registration.unregister();
           }
         });
       }

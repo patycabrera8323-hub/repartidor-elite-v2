@@ -332,7 +332,7 @@ export default function App() {
             >
               <div className="flex items-center justify-between mb-12">
                 <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-700 rounded-2xl flex items-center justify-center p-2">
-                   <img src="/logo-repartidor.png" alt="Logo" className="w-full h-full object-contain brightness-0 invert" />
+                   <img src="/logo.png" alt="Logo" className="w-full h-full object-contain brightness-0 invert" />
                 </div>
                 <button onClick={() => setSidebarOpen(false)} className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
                   <X size={20} />
