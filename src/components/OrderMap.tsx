@@ -55,11 +55,14 @@ export default function OrderMap({ order, driverLocation }: OrderMapProps) {
 
   if (!API_KEY) {
     return (
-      <div className="w-full h-full glass rounded-[2.5rem] border border-white/5 flex flex-col items-center justify-center p-8 text-center space-y-4">
-        <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center text-white/5">
+      <div className="w-full h-full glass rounded-[2.5rem] border border-white/5 flex flex-col items-center justify-center p-6 text-center space-y-3">
+        <div className="w-9 h-9 glass rounded-xl flex items-center justify-center text-white/10">
            <Pin background="transparent" glyphColor="currentColor" />
         </div>
-        <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] leading-relaxed">SISTEMA CARTOGRÁFICO FUERA DE LÍNEA: <br/> FALTA LLAVE DE ACCESO</p>
+        <p className="text-white/30 text-[8px] font-black uppercase tracking-[0.15em] leading-relaxed max-w-[240px] mx-auto">
+          Sistema Cartográfico Desconectado<br />
+          <span className="text-white/20 font-medium normal-case">(Falta llave de acceso a mapas)</span>
+        </p>
       </div>
     );
   }

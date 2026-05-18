@@ -31,6 +31,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'orders' | 'earnings' | 'profile'>('orders');
   const [orders, setOrders] = useState<Order[]>([]);
   const [driverLocation, setDriverLocation] = useState<{ lat: number, lng: number } | undefined>();
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   // Firebase Auth Listener
   useEffect(() => {
@@ -284,9 +285,9 @@ export default function App() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
                       
                       {/* Badge */}
-                      <div className="absolute top-4 left-4 bg-amber-500/20 border border-amber-500/50 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
-                        <div className="w-2.5 h-2.5 bg-amber-400 rounded-full animate-pulse shadow-[0_0_8px_#fbbf24]"></div>
-                        <span className="text-[11px] font-semibold tracking-wide text-amber-300">En línea</span>
+                      <div className="absolute top-3 left-3 bg-amber-500/20 border border-amber-500/30 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5 shadow-[0_0_10px_rgba(251,191,36,0.15)]">
+                        <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse shadow-[0_0_5px_#fbbf24]"></div>
+                        <span className="text-[9px] font-semibold tracking-wide text-amber-300">En línea</span>
                       </div>
                     </div>
                   </div>
@@ -294,12 +295,16 @@ export default function App() {
                   {/* Order List */}
                   <div className="flex-1 overflow-y-auto hide-scrollbar px-6 space-y-4 pb-32">
                     {orders.map(order => (
-                      <div key={order.id} className="glass-panel p-5 rounded-[24px] relative overflow-hidden group hover:bg-white/10 transition-colors duration-300">
+                      <div 
+                        key={order.id} 
+                        onClick={() => setSelectedOrder(order)}
+                        className="glass-panel p-5 rounded-[24px] relative overflow-hidden group hover:bg-white/10 transition-colors duration-300 cursor-pointer border border-white/5 hover:border-pink-500/30"
+                      >
                         {/* Ambient glow for the card */}
                         <div className="absolute -right-12 -top-12 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl group-hover:bg-pink-500/30 transition-all"></div>
                         
                         <div className="flex justify-between items-center mb-1 relative z-10">
-                          <h3 className="font-bold text-lg text-orange-200/90 tracking-wide">{order.businessName || 'Nuevo Pedido'}</h3>
+                          <h3 className="font-bold text-lg text-orange-200/90 tracking-wide">{order.businessName || order.storeName || 'Nuevo Pedido'}</h3>
                           <span className={`text-[10px] uppercase font-bold px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-inner`}>
                             {order.status === 'pending' ? 'Express' : order.status}
                           </span>
@@ -307,7 +312,7 @@ export default function App() {
                         
                         <div className="flex items-center text-white/50 text-xs font-medium tracking-wide mb-5 relative z-10">
                           <Navigation size={12} className="mr-1.5 inline -rotate-45" />
-                          {order.deliveryAddress?.substring(0, 30)}...
+                          {(order.deliveryLocation?.address || order.deliveryAddress || '').substring(0, 30)}...
                         </div>
                         
                         <div className="flex justify-between items-end relative z-10 border-t border-white/10 pt-4">
@@ -321,8 +326,8 @@ export default function App() {
                             if (btn.actionStatus) {
                               return (
                                 <button 
-                                  onClick={() => handleUpdateStatus(order.id, btn.actionStatus!)}
-                                  className={`bg-gradient-to-tr from-transparent to-white/5 border ${btn.color} px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all shadow-md`}
+                                  onClick={(e) => { e.stopPropagation(); handleUpdateStatus(order.id, btn.actionStatus!); }}
+                                  className={`bg-gradient-to-tr from-transparent to-white/5 border ${btn.color} px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all shadow-md relative z-20`}
                                 >
                                   {btn.label}
                                 </button>
@@ -497,6 +502,124 @@ export default function App() {
 
               {/* Fake Home Indicator */}
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-white/40 rounded-full z-40 pointer-events-none"></div>
+
+              {/* Order Details Modal */}
+              <AnimatePresence>
+                {selectedOrder && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-end justify-center p-4"
+                    onClick={() => setSelectedOrder(null)}
+                  >
+                    <motion.div
+                      initial={{ y: 100, scale: 0.95 }}
+                      animate={{ y: 0, scale: 1 }}
+                      exit={{ y: 100, scale: 0.95 }}
+                      className="w-full max-w-[380px] max-h-[80vh] glass-panel-glow rounded-[32px] border border-pink-500/30 overflow-hidden flex flex-col p-5 space-y-4 bg-[#0b1126]/95 shadow-[0_0_50px_rgba(228,41,117,0.3)] z-[110]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {/* Header */}
+                      <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                        <h3 className="font-display font-bold text-xs text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-400">Detalles de Entrega</h3>
+                        <button 
+                          onClick={() => setSelectedOrder(null)}
+                          className="w-6 h-6 rounded-full glass-panel flex items-center justify-center text-white/50 hover:text-white text-[10px]"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      {/* Content Container (Scrollable) */}
+                      <div className="flex-1 overflow-y-auto space-y-4 pr-1 hide-scrollbar">
+                        {/* Negocio Card */}
+                        <div className="glass-panel p-4 rounded-2xl relative overflow-hidden">
+                          <p className="text-[8px] text-white/40 font-bold uppercase tracking-wider mb-1">Establecimiento</p>
+                          <h4 className="text-xs font-bold text-orange-200">{selectedOrder.businessName || selectedOrder.storeName || 'Establecimiento'}</h4>
+                          {selectedOrder.storePhone && (
+                            <p className="text-[9px] text-white/50 mt-1">📞 {selectedOrder.storePhone}</p>
+                          )}
+                          <div className="text-xs text-white/60 mt-3 pt-3 border-t border-white/5 flex flex-col gap-1">
+                            <span className="font-bold text-pink-300 text-[8px] uppercase tracking-wider">Dirección de Negocio</span>
+                            <span className="text-[10px] leading-relaxed">{selectedOrder.pickupLocation?.address || 'Dirección de Negocio'}</span>
+                          </div>
+                        </div>
+
+                        {/* Cliente / Destino Card */}
+                        <div className="glass-panel p-4 rounded-2xl">
+                          <p className="text-[8px] text-white/40 font-bold uppercase tracking-wider mb-1">Cliente & Dirección</p>
+                          <p className="text-[11px] font-bold text-white mb-2 leading-relaxed">{selectedOrder.deliveryLocation?.address || selectedOrder.deliveryAddress || 'Dirección no disponible'}</p>
+                          {selectedOrder.clientPhone && (
+                            <p className="text-[9px] text-white/50">📞 {selectedOrder.clientPhone}</p>
+                          )}
+                          {selectedOrder.notes && (
+                            <div className="mt-2.5 p-2 rounded-xl bg-pink-500/5 border border-pink-500/10 text-[10px] text-pink-200/80 italic">
+                              <span className="font-bold not-italic text-pink-400 block mb-0.5 text-[8px] uppercase tracking-wider">Notas del cliente:</span>
+                              "{selectedOrder.notes}"
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Pago y Costo */}
+                        <div className="glass-panel p-4 rounded-2xl flex justify-between items-center relative overflow-hidden bg-gradient-to-r from-amber-500/5 to-transparent">
+                          <div>
+                            <p className="text-[8px] text-white/40 font-bold uppercase tracking-wider mb-0.5">Monto Total a Cobrar</p>
+                            <p className="text-lg font-black text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.3)]">${selectedOrder.total} MXN</p>
+                          </div>
+                          <span className="text-[8px] font-bold uppercase px-2 py-1 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/20 shadow-inner">
+                            {selectedOrder.paymentMethod === 'card' ? '💳 Tarjeta' : '💵 Efectivo'}
+                          </span>
+                        </div>
+
+                        {/* Artículos (Items) List */}
+                        {selectedOrder.items && selectedOrder.items.length > 0 && (
+                          <div className="space-y-1.5">
+                            <p className="text-[8px] text-white/40 font-bold uppercase tracking-wider pl-1">Artículos en este pedido</p>
+                            <div className="glass-panel p-3 rounded-2xl space-y-2">
+                              {selectedOrder.items.map((item, idx) => (
+                                <div key={idx} className="flex justify-between items-center text-[10px] border-b border-white/5 pb-2 last:border-b-0 last:pb-0">
+                                  <div className="flex gap-2">
+                                    <span className="font-black text-pink-400">{item.quantity || 1}x</span>
+                                    <span className="text-white/80">{item.name}</span>
+                                  </div>
+                                  <span className="font-bold text-white/60">${(item.price * (item.quantity || 1)).toFixed(2)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer Action Button */}
+                      <div className="pt-1">
+                        {(() => {
+                          const btn = getStatusLabelAndAction(selectedOrder);
+                          if (btn.actionStatus) {
+                            return (
+                              <button 
+                                onClick={() => {
+                                  handleUpdateStatus(selectedOrder.id, btn.actionStatus!);
+                                  setSelectedOrder(null);
+                                }}
+                                className={`w-full py-3.5 bg-gradient-to-tr from-transparent to-white/5 border ${btn.color} rounded-2xl text-[9px] font-bold uppercase tracking-wider active:scale-[0.98] transition-all shadow-md`}
+                              >
+                                {btn.label}
+                              </button>
+                            );
+                          } else {
+                            return (
+                              <div className={`w-full py-3.5 ${btn.color} text-[9px] font-bold uppercase tracking-widest border rounded-2xl text-center shadow-inner`}>
+                                {btn.label}
+                              </div>
+                            );
+                          }
+                        })()}
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
