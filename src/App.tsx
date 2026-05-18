@@ -132,11 +132,11 @@ export default function App() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4 }}
-              className="relative z-10 w-full h-full flex flex-col justify-center px-8 pt-16 pb-24"
+              className="relative z-10 w-full h-full flex flex-col justify-center px-8 pt-24 pb-24"
             >
               <div className="text-center mb-10">
-                 <div className="w-28 h-28 mx-auto mb-8 glass-panel-glow rounded-[2rem] flex items-center justify-center overflow-hidden p-3 border-2 border-pink-500/50 shadow-[0_0_25px_rgba(228,41,117,0.3)] group transition-all duration-500 hover:border-pink-400">
-                    <img src="/logo.png?v=2" className="w-[85%] h-[85%] object-contain" alt="Logo" />
+                 <div className="w-36 h-36 mx-auto mb-8 glass-panel-glow rounded-[2.5rem] flex items-center justify-center overflow-hidden p-3.5 border-2 border-pink-500/50 shadow-[0_0_35px_rgba(228,41,117,0.4)] group transition-all duration-500 hover:border-pink-400">
+                    <img src="/logo.png?v=2" className="w-[90%] h-[90%] object-contain" alt="Logo" />
                  </div>
                 <h1 className="font-display font-semibold text-3xl leading-tight text-white mb-2">
                   Portal de<br />Repartidores

@@ -61,7 +61,7 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
             </svg>
           </div>
 
-          <div className="w-full flex flex-col items-center mt-12 relative z-10">
+          <div className="w-full flex flex-col items-center mt-20 relative z-10">
             {/* Circular/Rounded Logo Container with Glow */}
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
@@ -69,8 +69,8 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
               transition={{ delay: 0.2, type: 'spring' }}
               className="relative mb-6"
             >
-              <div className="w-20 h-20 glass-panel-glow rounded-[1.8rem] flex items-center justify-center overflow-hidden p-3 border-2 border-pink-500/50 shadow-[0_0_25px_rgba(228,41,117,0.4)]">
-                <img src="/logo.png?v=2" alt="Logo" className="w-[85%] h-[85%] object-contain" />
+              <div className="w-28 h-28 glass-panel-glow rounded-[2.2rem] flex items-center justify-center overflow-hidden p-3.5 border-2 border-pink-500/50 shadow-[0_0_30px_rgba(228,41,117,0.45)]">
+                <img src="/logo.png?v=2" alt="Logo" className="w-[90%] h-[90%] object-contain" />
               </div>
               <motion.div
                 animate={{ rotate: 360 }}
