@@ -111,15 +111,7 @@ export default function App() {
            </svg>
         </div>
 
-        {/* Status Bar Mock (Time & Battery) */}
-        <div className="absolute top-0 w-full flex justify-between items-center px-8 py-3 text-xs font-medium z-20">
-          <span>9:41</span>
-          <div className="flex gap-1 items-center">
-            <div className="w-4 h-3 bg-white rounded-sm relative">
-              <div className="absolute -right-1 top-1 w-0.5 h-1 bg-white rounded-r-sm"></div>
-            </div>
-          </div>
-        </div>
+
 
         <AnimatePresence mode="wait">
           {showWelcome ? (
