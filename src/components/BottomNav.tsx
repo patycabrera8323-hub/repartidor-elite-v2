@@ -1,55 +1,64 @@
-import { Home, ClipboardList, User } from 'lucide-react';
-import { cn } from '@/src/lib/utils';
+import { ShoppingBag, Wallet, User } from 'lucide-react';
 
 interface BottomNavProps {
-  activeTab: 'home' | 'history' | 'profile';
-  onTabChange: (tab: 'home' | 'history' | 'profile') => void;
-  pendingCount?: number;
+  activeTab: 'orders' | 'earnings' | 'profile';
+  onTabChange: (tab: 'orders' | 'earnings' | 'profile') => void;
 }
 
-export default function BottomNav({ activeTab, onTabChange, pendingCount = 0 }: BottomNavProps) {
+export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const tabs = [
-    { id: 'home', label: 'Pedidos', icon: Home },
-    { id: 'history', label: 'Historial', icon: ClipboardList },
-    { id: 'profile', label: 'Perfil', icon: User },
-  ] as const;
+    { id: 'orders' as const, label: 'Ordenes', icon: ShoppingBag },
+    { id: 'earnings' as const, label: 'Ganancias', icon: Wallet },
+    { id: 'profile' as const, label: 'Perfil', icon: User },
+  ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="border-t border-white/5 px-8 pt-3 pb-5 flex justify-around items-center backdrop-blur-xl"
-        style={{ background: 'rgba(15,23,42,0.92)' }}
-      >
+    <div className="bottom-nav">
+      <div className="bottom-nav-inner">
         {tabs.map((tab) => {
-          const Icon = tab.icon;
           const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={cn(
-                "relative flex flex-col items-center gap-1.5 transition-all duration-200 py-1 px-4 rounded-2xl",
-                isActive ? "text-emerald-400" : "text-zinc-600 hover:text-zinc-400"
-              )}
+              className={`nav-tab ${isActive ? 'active' : ''}`}
             >
+              <Icon
+                size={24}
+                strokeWidth={isActive ? 2 : 1.5}
+                style={{
+                  color: isActive ? '#ff7e5f' : 'rgba(255,255,255,0.25)',
+                  filter: isActive ? 'drop-shadow(0 0 10px rgba(255,126,95,0.8))' : 'none',
+                  transition: 'all 0.4s ease'
+                }}
+              />
+              <span
+                className="nav-label"
+                style={{
+                  color: isActive ? '#ff7e5f' : 'transparent',
+                  opacity: isActive ? 1 : 0,
+                  transform: isActive ? 'translateY(0)' : 'translateY(4px)',
+                  transition: 'all 0.4s ease'
+                }}
+              >
+                {tab.label}
+              </span>
               {isActive && (
-                <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-emerald-400 rounded-full" />
+                <div style={{
+                  position: 'absolute',
+                  bottom: -2,
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  background: '#ff7e5f',
+                  boxShadow: '0 0 12px rgba(255,126,95,1)'
+                }} />
               )}
-              <div className="relative">
-                <Icon size={22} strokeWidth={isActive ? 2.5 : 1.5} />
-                {tab.id === 'home' && pendingCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center text-[8px] font-black text-black">
-                    {pendingCount}
-                  </span>
-                )}
-              </div>
-              <span className={cn(
-                "text-[9px] font-bold uppercase tracking-widest",
-                isActive ? "text-emerald-400" : "text-zinc-600"
-              )}>{tab.label}</span>
             </button>
           );
         })}
       </div>
-    </nav>
+    </div>
   );
 }

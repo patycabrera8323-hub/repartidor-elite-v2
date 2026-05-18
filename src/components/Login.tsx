@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { auth } from '../lib/firebase';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { motion } from 'motion/react';
-import { Truck } from 'lucide-react';
+import { Truck, Shield, Zap, Globe, ArrowRight } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 interface LoginProps {
   onLogin: () => void;
@@ -20,7 +21,7 @@ export default function Login({ onLogin }: LoginProps) {
       await signInWithPopup(auth, provider);
       onLogin();
     } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión');
+      setError(err.message || 'FALLO EN LA SINCRONIZACIÓN DE NODO');
       console.error(err);
     } finally {
       setLoading(false);
@@ -28,94 +29,110 @@ export default function Login({ onLogin }: LoginProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between p-6 font-sans relative overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #0c4a6e 50%, #134e4a 100%)' }}
-    >
-      {/* Background glows */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 left-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-dark-bg flex flex-col items-center justify-between p-10 font-sans relative overflow-hidden selection:bg-neon-cyan selection:text-black">
+      
+      {/* 🎭 BACKGROUND ELEMENTS */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[20%] right-[-10%] w-[80%] h-[50%] bg-neon-cyan/5 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute bottom-[20%] left-[-10%] w-[70%] h-[40%] bg-neon-pink/5 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+      </div>
 
-      {/* Spacer */}
-      <div />
+      {/* Top Branding */}
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="w-full flex justify-center pt-4 relative z-20"
+      >
+        <div className="px-6 py-2 rounded-full glass border-white/5">
+          <p className="text-[9px] font-black tracking-[0.6em] text-white/20 uppercase">SISTEMA DE ACCESO GLOBAL</p>
+        </div>
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-sm flex flex-col items-center gap-9 relative z-10"
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-sm flex flex-col items-center gap-16 relative z-10"
       >
-        {/* Logo icon */}
-        <div className="flex flex-col items-center gap-5">
+        {/* Logo section */}
+        <div className="flex flex-col items-center gap-8 text-center">
           <motion.div
-            initial={{ scale: 0.7, rotate: -10 }}
+            initial={{ scale: 0.8, rotate: -15 }}
             animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 180, delay: 0.15 }}
-            className="w-24 h-24 rounded-3xl flex items-center justify-center shadow-2xl shadow-cyan-500/20"
-            style={{ background: 'linear-gradient(135deg, #06b6d4, #14b8a6)' }}
+            transition={{ type: 'spring', damping: 15, delay: 0.2 }}
+            className="w-32 h-32 glass rounded-[3rem] flex items-center justify-center neon-border-cyan relative group"
           >
-            <Truck size={46} className="text-white" strokeWidth={2} />
+            <div className="absolute inset-0 bg-neon-cyan/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Truck size={48} className="text-white drop-shadow-neon-cyan" strokeWidth={1.5} />
           </motion.div>
-          <div className="text-center">
-            <h1 className="text-5xl font-black tracking-tighter text-white">
-              Repartidor<span className="text-cyan-400">PRO</span>
+          <div className="space-y-4">
+            <h1 className="text-5xl font-display font-black tracking-tighter text-white uppercase leading-[0.85]">
+              REPARTIDOR<br/>
+              <span className="text-neon-cyan text-glow-cyan">ELITE</span>
             </h1>
-            <p className="text-sky-300/60 text-sm mt-2 font-medium">Plataforma de reparto inteligente</p>
+            <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em] leading-relaxed">
+              PLATAFORMA DE LOGÍSTICA <br/> DE NUEVA GENERACIÓN
+            </p>
           </div>
         </div>
 
         {/* Feature pills */}
-        <div className="flex gap-2 flex-wrap justify-center">
-          {['🗺 Mapa en vivo', '📦 Pedidos reales', '⚡ Tiempo real'].map(f => (
-            <span key={f}
-              className="px-3 py-1.5 rounded-full text-[10px] font-bold text-cyan-200/70 uppercase tracking-widest border border-cyan-500/20"
-              style={{ background: 'rgba(6,182,212,0.08)' }}
+        <div className="flex gap-3 flex-wrap justify-center">
+          {[
+            { label: 'MAPA VITAL', icon: <Globe size={10}/> },
+            { label: 'NODOS REALES', icon: <Zap size={10}/> },
+            { label: 'PROTOCOLO PRO', icon: <Shield size={10}/> }
+          ].map(f => (
+            <span key={f.label}
+              className="px-4 py-2 rounded-full text-[8px] font-black text-white/40 uppercase tracking-widest glass border-white/5 flex items-center gap-2"
             >
-              {f}
+              <span className="text-neon-cyan">{f.icon}</span>
+              {f.label}
             </span>
           ))}
         </div>
 
         {/* Login button */}
-        <div className="w-full flex flex-col gap-3">
+        <div className="w-full flex flex-col gap-6">
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full py-5 bg-white text-slate-900 font-black rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-transform disabled:opacity-50 text-sm tracking-wide shadow-2xl shadow-black/30"
+            className="w-full py-6 bg-white text-black font-black rounded-[2rem] flex items-center justify-center gap-4 active:scale-95 transition-all disabled:opacity-50 text-[10px] uppercase tracking-[0.4em] shadow-[0_20px_40px_rgba(255,255,255,0.1)] relative overflow-hidden group"
           >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
-                Continuar con Google
-              </>
-            )}
+            <div className="absolute inset-0 bg-neon-cyan translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+            <span className="relative z-10 flex items-center gap-4">
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
+                  SINCRONIZAR CON GOOGLE
+                </>
+              )}
+            </span>
           </button>
 
           {error && (
-            <motion.p
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-red-300 text-xs text-center font-medium bg-red-500/10 border border-red-500/20 rounded-xl p-3"
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-neon-pink/10 border border-neon-pink/20 rounded-2xl p-5"
             >
-              {error}
-            </motion.p>
+              <p className="text-neon-pink text-[9px] text-center font-black uppercase tracking-widest">{error}</p>
+            </motion.div>
           )}
         </div>
 
-        <p className="text-[10px] text-sky-400/30 text-center uppercase tracking-widest font-bold">
-          Al continuar aceptas los términos de servicio
+        <p className="text-[8px] text-white/10 text-center uppercase tracking-[0.5em] font-black max-w-[250px]">
+          AL SINCRONIZAR ACEPTAS LOS PROTOCOLOS DE SERVICIO ELITE
         </p>
       </motion.div>
 
-      {/* Searmo footer */}
-      <div className="flex flex-col items-center gap-2 opacity-50 hover:opacity-100 transition-all duration-700 pb-4 relative z-10">
-        <img
-          src="/Logo SEARMO estilo t.png"
-          alt="Searmo"
-          className="h-6 w-auto object-contain"
-        />
-        <p className="text-[7px] font-black uppercase tracking-[0.5em] text-sky-300/60">Powered by Searmo</p>
+      {/* Footer Branding */}
+      <div className="flex flex-col items-center gap-4 opacity-10 group cursor-default pt-10 relative z-10">
+        <div className="h-[1px] w-12 bg-white/40 group-hover:w-20 transition-all" />
+        <p className="text-[9px] font-black uppercase tracking-[0.8em] text-white">SEARMO CO.</p>
       </div>
     </div>
   );

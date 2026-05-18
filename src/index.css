@@ -1,1 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom styles for the artistic background and glass effects */
+.artistic-bg {
+  background-color: #0b1126; /* Deep blue base */
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(228, 41, 117, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(31, 81, 255, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(138, 43, 226, 0.3) 0%, transparent 50%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add some abstract painting-like shapes using pseudo-elements */
+.artistic-bg::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 50%;
+  height: 50%;
+  background: linear-gradient(135deg, #e42975 0%, transparent 100%);
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  filter: blur(60px);
+  opacity: 0.6;
+  z-index: 0;
+  animation: float 20s ease-in-out infinite alternate;
+}
+
+.artistic-bg::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  right: -10%;
+  width: 60%;
+  height: 60%;
+  background: linear-gradient(to top left, #1f51ff 0%, transparent 100%);
+  border-radius: 30% 70% 50% 50% / 50% 50% 50% 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  z-index: 0;
+  animation: float 25s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(5%, 5%) rotate(5deg); }
+  100% { transform: translate(-5%, -5%) rotate(-5deg); }
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.glass-panel-glow {
+  background: rgba(228, 41, 117, 0.15); /* Pinkish glow */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(228, 41, 117, 0.4);
+  box-shadow: 0 0 20px 0 rgba(228, 41, 117, 0.2);
+}
+
+/* Hide scrollbar for horizontal car list */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

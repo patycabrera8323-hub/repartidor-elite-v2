@@ -33,7 +33,7 @@ function RouteDisplay({ origin, destination }: {
         const newPolylines = routes[0].createPolylines();
         newPolylines.forEach(p => {
           p.setOptions({
-            strokeColor: '#10b981', // emerald-500
+            strokeColor: '#00ffff', // neon-cyan
             strokeWeight: 6,
             strokeOpacity: 0.8
           });
@@ -55,14 +55,17 @@ export default function OrderMap({ order, driverLocation }: OrderMapProps) {
 
   if (!API_KEY) {
     return (
-      <div className="w-full h-48 bg-neutral-900 rounded-2xl border border-neutral-800 flex items-center justify-center p-6 text-center">
-        <p className="text-neutral-500 text-sm italic">Mapa desactivado: Falta GOOGLE_MAPS_PLATFORM_KEY</p>
+      <div className="w-full h-56 glass rounded-[2.5rem] border border-white/5 flex flex-col items-center justify-center p-8 text-center space-y-4">
+        <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center text-white/5">
+           <Pin background="transparent" glyphColor="currentColor" />
+        </div>
+        <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] leading-relaxed">SISTEMA CARTOGRÁFICO FUERA DE LÍNEA: <br/> FALTA LLAVE DE ACCESO</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-64 bg-neutral-900 rounded-2xl border border-neutral-800 overflow-hidden relative">
+    <div className="w-full h-72 glass rounded-[3rem] border border-white/10 overflow-hidden relative shadow-2xl">
       <APIProvider apiKey={API_KEY} version="weekly">
         <Map
           defaultCenter={center}
@@ -75,62 +78,44 @@ export default function OrderMap({ order, driverLocation }: OrderMapProps) {
           styles={[
             {
               "elementType": "geometry",
-              "stylers": [{ "color": "#242f3e" }]
+              "stylers": [{ "color": "#050505" }]
             },
             {
               "elementType": "labels.text.fill",
-              "stylers": [{ "color": "#746855" }]
+              "stylers": [{ "color": "#ffffff" }, { "opacity": 0.2 }]
             },
             {
               "elementType": "labels.text.stroke",
-              "stylers": [{ "color": "#242f3e" }]
-            },
-            {
-              "featureType": "administrative.locality",
-              "elementType": "labels.text.fill",
-              "stylers": [{ "color": "#d59563" }]
-            },
-            {
-              "featureType": "poi",
-              "elementType": "labels.text.fill",
-              "stylers": [{ "color": "#d59563" }]
-            },
-            {
-              "featureType": "poi.park",
-              "elementType": "geometry",
-              "stylers": [{ "color": "#263c3f" }]
+              "stylers": [{ "color": "#000000" }]
             },
             {
               "featureType": "road",
               "elementType": "geometry",
-              "stylers": [{ "color": "#38414e" }]
+              "stylers": [{ "color": "#1a1a1a" }]
             },
             {
               "featureType": "road",
               "elementType": "geometry.stroke",
-              "stylers": [{ "color": "#212a37" }]
-            },
-            {
-              "featureType": "road.highway",
-              "elementType": "geometry",
-              "stylers": [{ "color": "#746855" }]
+              "stylers": [{ "color": "#00ffff" }, { "opacity": 0.05 }]
             },
             {
               "featureType": "water",
               "elementType": "geometry",
-              "stylers": [{ "color": "#17263c" }]
+              "stylers": [{ "color": "#000000" }]
             }
           ]}
         >
           <AdvancedMarker position={order.deliveryLocation} title="Destino">
-            <Pin background="#10b981" glyphColor="#000" />
+            <div className="w-10 h-10 glass rounded-full flex items-center justify-center border-2 border-neon-pink shadow-[0_0_15px_rgba(255,0,127,0.5)]">
+              <div className="w-3 h-3 bg-neon-pink rounded-full animate-pulse" />
+            </div>
           </AdvancedMarker>
 
           {driverLocation && (
             <>
               <AdvancedMarker position={driverLocation} title="Tu ubicación">
-                <div className="w-8 h-8 bg-blue-500 rounded-full border-4 border-white shadow-xl flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+                <div className="w-10 h-10 glass rounded-full flex items-center justify-center border-2 border-neon-cyan shadow-[0_0_15px_rgba(0,255,255,0.5)]">
+                  <div className="w-3 h-3 bg-neon-cyan rounded-full animate-ping" />
                 </div>
               </AdvancedMarker>
               <RouteDisplay origin={driverLocation} destination={order.deliveryLocation} />

@@ -1,26 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Zap, ShieldCheck, Truck, ArrowRight, Star, Smartphone, Box, Shield } from 'lucide-react';
+import { Zap, ShieldCheck, Navigation, ArrowRight, Star } from 'lucide-react';
 
-export function WelcomeScreen({ onComplete }: { onComplete: () => void }) {
+interface WelcomeScreenProps {
+  onStart: () => void;
+}
+
+export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome_Elite_v2_1');
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome_Repartidor_v1');
     if (!hasSeenWelcome) {
       setTimeout(() => setIsVisible(true), 100);
     } else {
-      onComplete();
+      onStart();
     }
-  }, [onComplete]);
+  }, [onStart]);
 
   const handleStart = () => {
-    localStorage.setItem('hasSeenWelcome_Elite_v2_1', 'true');
+    localStorage.setItem('hasSeenWelcome_Repartidor_v1', 'true');
     setIsVisible(false);
-    setTimeout(onComplete, 400);
+    setTimeout(onStart, 400);
   };
 
   if (!isVisible) return null;
+
+  const features = [
+    {
+      icon: <Navigation className="text-orange-500" size={20} />,
+      title: "Rutas Inteligentes",
+      desc: "Visualiza pedidos cercanos y optimiza tus entregas."
+    },
+    {
+      icon: <Zap className="text-amber-500" size={20} />,
+      title: "Tiempo Real",
+      desc: "Notificaciones y actualizaciones instantáneas."
+    },
+    {
+      icon: <ShieldCheck className="text-emerald-500" size={20} />,
+      title: "Acceso Seguro",
+      desc: "Solo personal autorizado. 100% protegido."
+    }
+  ];
 
   return (
     <AnimatePresence>
@@ -29,118 +51,91 @@ export function WelcomeScreen({ onComplete }: { onComplete: () => void }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[10000] bg-[#000000] flex flex-col items-center justify-between p-8 overflow-hidden font-sans selection:bg-green-500/30"
+          className="absolute inset-0 z-[10000] bg-[#faf8f5] flex flex-col items-center justify-between p-8 overflow-hidden rounded-[32px]"
         >
-          {/* Subtle Cyber Grid Background */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none" 
-               style={{ backgroundImage: 'radial-gradient(#22c55e 0.5px, transparent 0.5px)', backgroundSize: '30px 30px' }} />
-
-          {/* Finer Background Glows */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-[-10%] right-[-10%] w-[80%] h-[40%] bg-green-500/5 rounded-full blur-[120px]" />
-            <div className="absolute bottom-[-5%] left-[-10%] w-[70%] h-[30%] bg-green-900/10 rounded-full blur-[100px]" />
+          {/* Decorative background */}
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+            <div className="absolute top-[-10%] right-[-10%] w-[80%] h-[50%] bg-orange-50 rounded-full blur-[120px] opacity-60" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-[80%] h-[50%] bg-amber-50 rounded-full blur-[120px] opacity-60" />
           </div>
 
-          {/* Top Branding */}
-          <motion.div 
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="w-full flex justify-center pt-4 relative z-20"
-          >
-            <div className="px-4 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md">
-              <p className="text-[9px] font-black tracking-[0.4em] text-green-500 uppercase">Elite Protocol 2.1</p>
-            </div>
-          </motion.div>
-
-          {/* Center Content */}
-          <div className="w-full max-w-md flex flex-col items-center relative z-10">
-            {/* Minimalist Logo Container */}
+          <div className="w-full flex flex-col items-center mt-12">
+            {/* Circular Logo Container with Star Badge */}
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="relative mb-12 group"
+              transition={{ delay: 0.2, type: 'spring' }}
+              className="relative mb-6"
             >
-              <div className="w-28 h-28 bg-[#0a0a0a] rounded-[2rem] flex items-center justify-center p-5 border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)] group-hover:border-green-500/30 transition-all duration-700">
-                {/* Logo with explicit cache buster and absolute path */}
-                <img 
-                  src={`/logo.png?v=${Date.now()}`} 
-                  alt="Logo" 
-                  className="w-full h-full object-contain"
-                  onError={(e) => {
-                    // Fallback to text if image fails
-                    e.currentTarget.style.display = 'none';
-                    const parent = e.currentTarget.parentElement;
-                    if (parent) {
-                      const fallback = document.createElement('div');
-                      fallback.className = 'text-green-500 font-black text-2xl tracking-tighter';
-                      fallback.innerText = 'ELITE';
-                      parent.appendChild(fallback);
-                    }
-                  }}
-                />
+              <div className="w-20 h-20 bg-white border-4 border-orange-500 rounded-[2rem] flex items-center justify-center shadow-xl shadow-orange-100 overflow-hidden p-3">
+                <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
               </div>
-              {/* Ultra Thin Ring */}
-              <div className="absolute inset-[-4px] rounded-[2.2rem] border-[0.5px] border-green-500/20 animate-pulse" />
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
+                className="absolute -top-1 -right-1 w-6 h-6 bg-orange-600 rounded-full shadow-lg flex items-center justify-center"
+              >
+                <Star className="w-3 h-3 text-white fill-white" />
+              </motion.div>
             </motion.div>
 
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-center space-y-3"
+              transition={{ delay: 0.4 }}
+              className="text-center"
             >
-              <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-[0.9]">
-                REPARTIDOR<br/>
-                <span className="text-green-500">PRO</span>
+              <h1 className="text-2xl font-black text-neutral-900 leading-tight">
+                ¡Bienvenido,<br/>
+                <span className="text-orange-600">Repartidor Elite!</span>
               </h1>
-              <p className="text-white/60 text-[11px] font-bold px-6 leading-relaxed uppercase tracking-widest mt-4">
-                Si gustas puedes usarla <span className="text-green-500">instalándola</span> o directamente en la <span className="text-green-500">web</span> ahorrando memoria en tu celular.
+              <p className="text-neutral-500 text-[10px] mt-3 font-bold px-4 leading-relaxed uppercase tracking-wider">
+                Si gustas puedes usarla <span className="text-orange-600">instalándola</span> o directamente en la <span className="text-orange-600">web</span> ahorrando memoria en tu celular.
               </p>
             </motion.div>
 
-            {/* Finer Info Cards */}
-            <div className="grid grid-cols-2 gap-3 w-full mt-12">
-               <InfoCard icon={<Zap size={14}/>} title="Rápido" />
-               <InfoCard icon={<Shield size={14}/>} title="Seguro" />
-               <InfoCard icon={<Smartphone size={14}/>} title="Ligero" />
-               <InfoCard icon={<Star size={14}/>} title="Premium" />
+            {/* Features */}
+            <div className="w-full space-y-5 mt-8 px-2">
+              {features.map((f, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.6 + (i * 0.1) }}
+                  className="flex items-center gap-4 group"
+                >
+                  <div className="flex-shrink-0 w-10 h-10 bg-white border border-neutral-100 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                    {f.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-[11px] font-black text-neutral-900 uppercase tracking-tight">{f.title}</h3>
+                    <p className="text-[9px] text-neutral-400 font-medium leading-tight">{f.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
 
-          {/* Footer Action - Futuristic Pill Button */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="w-full max-w-sm pb-10 flex flex-col items-center relative z-10"
+            transition={{ delay: 1 }}
+            className="w-full pb-6 flex flex-col items-center"
           >
             <button
               onClick={handleStart}
-              className="group relative w-full py-5 bg-white text-black rounded-full font-black uppercase tracking-[0.3em] text-[10px] overflow-hidden transition-all hover:scale-[1.02] active:scale-95 shadow-2xl shadow-white/10"
+              className="w-full py-4 bg-neutral-900 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-orange-600 active:scale-95 transition-all shadow-xl shadow-black/10 mb-6 cursor-pointer"
             >
-              <span className="relative z-10 flex items-center justify-center gap-3">
-                Entrar al Sistema
-                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-              </span>
-              <div className="absolute inset-0 bg-green-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+              Comenzar Ruta
+              <ArrowRight size={14} />
             </button>
-            
-            <div className="mt-8 flex flex-col items-center gap-3 opacity-30 hover:opacity-60 transition-opacity">
-               <img src="/searmo-logo.png" alt="Searmo" className="h-4 w-auto object-contain brightness-0 invert" />
-               <p className="text-[7px] font-black uppercase tracking-[0.5em] text-white">Powered by Searmo</p>
+            <div className="flex flex-col items-center gap-1 opacity-60">
+              <img src="/searmo-logo.png" alt="Searmo" className="h-4 w-auto object-contain" />
+              <p className="text-[6px] font-black uppercase tracking-[0.4em] text-neutral-400">Powered by Searmo</p>
             </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-function InfoCard({ icon, title }: { icon: React.ReactNode, title: string }) {
-  return (
-    <div className="flex flex-col items-center gap-2 p-4 rounded-[1.5rem] bg-white/[0.02] border-[0.5px] border-white/5 backdrop-blur-sm">
-      <div className="text-green-500">{icon}</div>
-      <span className="text-[8px] font-black uppercase tracking-widest text-white/40">{title}</span>
-    </div>
   );
 }

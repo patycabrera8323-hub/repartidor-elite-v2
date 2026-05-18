@@ -1,17 +1,29 @@
 {
-  "name": "Repartidor PRO",
-  "short_name": "RepartidorPRO",
-  "description": "Plataforma de reparto inteligente",
+  "name": "Repartidor Elite",
+  "short_name": "Repartidor Elite",
+  "description": "Plataforma de reparto inteligente de Mi Colonia",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#06b6d4",
+  "background_color": "#0b1126",
+  "theme_color": "#e42975",
   "icons": [
     {
-      "src": "/logo repartidor.png",
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

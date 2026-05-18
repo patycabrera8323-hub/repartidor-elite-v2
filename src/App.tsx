@@ -1,304 +1,356 @@
 import React, { useState, useEffect } from 'react';
+import { Lock, Mail, ChevronRight, Package, Bell, Menu, Navigation, Wallet, Star, Gauge, Truck, User } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { auth, db } from './lib/firebase';
 import { 
-  onSnapshot, 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword 
+} from 'firebase/auth';
+import { 
   collection, 
   query, 
-  where, 
-  orderBy, 
+  onSnapshot, 
+  updateDoc, 
   doc, 
-  getDoc 
+  Timestamp, 
+  orderBy, 
+  limit 
 } from 'firebase/firestore';
-import { 
-  LogOut, 
-  Bell, 
-  Navigation, 
-  History, 
-  Wallet, 
-  User as UserIcon, 
-  Menu as MenuIcon, 
-  X, 
-  Zap,
-  Power,
-  Box,
-  Truck,
-  Settings,
-  ArrowRight
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { cn } from './lib/utils';
-import { WelcomeScreen } from './components/WelcomeScreen';
-import AuthFlow from './components/AuthFlow';
-import { orderService } from './services/orderService';
-import { Order } from './types';
+import { Order, OrderStatus } from './types';
+import OrderMap from './components/OrderMap';
+import WelcomeScreen from './components/WelcomeScreen';
 
 export default function App() {
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [userData, setUserData] = useState<any>(null);
-  const [isApproved, setIsApproved] = useState<boolean | null>(null);
-  
+  const [loading, setLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'orders' | 'earnings' | 'profile'>('orders');
   const [orders, setOrders] = useState<Order[]>([]);
-  const [view, setView] = useState<'dashboard' | 'history' | 'profile'>('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isOnline, setIsOnline] = useState(false);
-  const [earnings, setEarnings] = useState(0);
+  const [driverLocation, setDriverLocation] = useState<{ lat: number, lng: number } | undefined>();
 
+  // Firebase Auth Listener
   useEffect(() => {
-    return auth.onAuthStateChanged(async (u) => {
-      setUser(u);
-      if (u) {
-        const dDoc = await getDoc(doc(db, 'drivers', u.uid));
-        if (dDoc.exists()) {
-          const data = dDoc.data();
-          setUserData(data);
-          setIsApproved(data.approved === true);
-        } else {
-          setIsApproved(false);
-        }
-      }
-      setAuthLoading(false);
+    const unsub = onAuthStateChanged(auth, (u) => { 
+      setUser(u); 
+      setIsLoggedIn(!!u);
+      setLoading(false); 
     });
+    return unsub;
   }, []);
 
+  // Firestore Orders Listener
   useEffect(() => {
-    if (!user || !isOnline) {
-      setOrders([]);
-      return;
-    }
-
-    const q = query(
-      collection(db, 'orders'),
-      where('status', 'in', ['pending', 'accepted', 'preparing', 'ready', 'on_route']),
-      orderBy('createdAt', 'desc')
-    );
-
-    const unsubscribe = onSnapshot(q, (snap) => {
-      const data: Order[] = [];
+    if (!user) return;
+    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(20));
+    const unsub = onSnapshot(q, (snap) => {
+      const o: Order[] = [];
       snap.forEach(d => {
-        const order = { id: d.id, ...d.data() } as Order;
-        if (order.status === 'pending' || order.driverId === user.uid) {
-          data.push(order);
+        const data = d.data();
+        if (data.status === 'pending' || data.driverId === user.uid) {
+          o.push({ id: d.id, ...data } as Order);
         }
       });
-      setOrders(data);
+      setOrders(o);
     });
+    return unsub;
+  }, [user]);
 
-    return () => unsubscribe();
-  }, [user, isOnline]);
+  // Geolocation Listener
+  useEffect(() => {
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => setDriverLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {},
+      { enableHighAccuracy: true }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
 
-  const handleUpdateStatus = async (orderId: string, nextStatus: Order['status'], assign: boolean = false) => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
     try {
-      await orderService.updateOrderStatus(orderId, nextStatus, assign);
-      if (nextStatus === 'accepted') setIsOnline(true);
-    } catch (e) {
-      alert("Error en el sistema.");
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err: any) {
+      setError('Credenciales inválidas. Por favor intenta de nuevo.');
+      console.error(err);
     }
   };
 
-  const handleLogout = () => { auth.signOut(); window.location.reload(); };
+  const handleUpdateStatus = async (orderId: string, status: OrderStatus) => {
+    try {
+      await updateDoc(doc(db, 'orders', orderId), { 
+        status, 
+        driverId: user.uid, 
+        updatedAt: Timestamp.now() 
+      });
+    } catch (err) { console.error(err); }
+  };
 
-  if (showWelcome) return <WelcomeScreen onComplete={() => setShowWelcome(false)} />;
-  
-  if (authLoading) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="w-6 h-6 border-[1px] border-green-500/20 border-t-green-500 rounded-full animate-spin" />
+  if (loading) return (
+    <div className="min-h-screen bg-[#0b1126] flex items-center justify-center">
+      <div className="w-12 h-12 border-4 border-pink-500/20 border-t-pink-500 rounded-full animate-spin" />
     </div>
   );
 
-  if (!user || isApproved === false) return <AuthFlow onAuthenticated={setUser} />;
-
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-green-500/30 overflow-hidden flex flex-col">
-      
-      {/* 📱 TOP BAR - ULTRA MINIMAL */}
-      <header className="bg-black/80 backdrop-blur-md border-b border-white/[0.05] sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={() => setSidebarOpen(true)} className="text-white/40 hover:text-green-500 transition-colors">
-            <MenuIcon size={22} strokeWidth={1.5} />
-          </button>
-          <div>
-            <p className="text-[7px] font-black uppercase tracking-[0.4em] text-green-500 leading-none mb-1">Estado: Activo</p>
-            <h1 className="text-xs font-bold tracking-tight text-white/90">{userData?.name || 'Usuario'}</h1>
-          </div>
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="text-right">
-             <p className="text-[7px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Earnings Today</p>
-             <p className="text-sm font-black text-white">${earnings.toFixed(2)}</p>
-          </div>
-          <button className="relative text-white/40">
-            <Bell size={20} strokeWidth={1.5} />
-            <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-green-500 rounded-full" />
-          </button>
-        </div>
-      </header>
-
-      {/* 🗺 MAIN DASHBOARD */}
-      <main className="flex-1 overflow-y-auto p-6 space-y-10 pb-32">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 font-sans text-white">
+      {/* Phone Mockup Container */}
+      <div className="relative w-full max-w-[400px] h-[800px] max-h-[90vh] artistic-bg rounded-[40px] overflow-hidden shadow-2xl border-[8px] border-gray-800">
         
-        {/* Connection Status - Uber Style */}
-        <section>
-          <div className={cn(
-            "p-8 rounded-[2.5rem] border transition-all duration-700 relative overflow-hidden",
-            isOnline ? "bg-green-500/5 border-green-500/20" : "bg-white/[0.02] border-white/[0.05]"
-          )}>
-            <div className="relative z-10 flex items-center justify-between">
-               <div className="space-y-1">
-                 <h2 className="text-2xl font-black tracking-tighter uppercase">{isOnline ? 'On Duty' : 'Off Duty'}</h2>
-                 <p className="text-[9px] font-bold text-white/30 tracking-[0.2em] uppercase">{isOnline ? 'Searching for trips...' : 'Go online to start'}</p>
-               </div>
-               <button 
-                 onClick={() => setIsOnline(!isOnline)}
-                 className={cn(
-                   "w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 border-[0.5px]",
-                   isOnline ? "bg-green-500 border-white/20 text-black shadow-[0_0_30px_rgba(34,197,94,0.3)]" : "bg-white/5 border-white/10 text-white/20"
-                 )}
-               >
-                 <Power size={24} strokeWidth={2.5} />
-               </button>
+        {/* Dynamic Abstract Background Elements */}
+        <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
+           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+             <path d="M-50,200 Q150,50 350,300 T550,150" fill="none" stroke="#e42975" strokeWidth="20" strokeLinecap="round" opacity="0.6"/>
+             <path d="M-20,400 Q120,600 400,450" fill="none" stroke="#1f51ff" strokeWidth="40" strokeLinecap="round" opacity="0.5"/>
+             <circle cx="350" cy="100" r="40" fill="#e42975" opacity="0.4" />
+             <rect x="50" y="600" width="80" height="80" rx="20" fill="#1f51ff" opacity="0.3" transform="rotate(45 90 640)" />
+           </svg>
+        </div>
+
+        {/* Status Bar Mock (Time & Battery) */}
+        <div className="absolute top-0 w-full flex justify-between items-center px-8 py-3 text-xs font-medium z-20">
+          <span>9:41</span>
+          <div className="flex gap-1 items-center">
+            <div className="w-4 h-3 bg-white rounded-sm relative">
+              <div className="absolute -right-1 top-1 w-0.5 h-1 bg-white rounded-r-sm"></div>
             </div>
           </div>
-        </section>
-
-        {/* Orders List */}
-        <section className="space-y-6">
-          <div className="flex items-center justify-between px-2">
-             <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-white/20">Tareas Activas ({orders.length})</h3>
-          </div>
-
-          <div className="space-y-4">
-            <AnimatePresence mode="popLayout">
-              {orders.length === 0 ? (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 flex flex-col items-center gap-4">
-                  <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center opacity-10">
-                    <Navigation size={24} />
-                  </div>
-                  <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/10">No orders nearby</p>
-                </motion.div>
-              ) : (
-                orders.map((order) => (
-                  <motion.div
-                    key={order.id}
-                    layout
-                    className={cn(
-                      "p-7 rounded-[2.5rem] border backdrop-blur-xl transition-all duration-500",
-                      order.driverId === user.uid ? "bg-white/[0.03] border-green-500/30" : "bg-white/[0.01] border-white/[0.05]"
-                    )}
-                  >
-                    <div className="flex justify-between items-start mb-8">
-                       <div className="space-y-1">
-                         <div className="flex gap-2">
-                            <span className="text-[8px] font-black text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full uppercase tracking-widest">Elite</span>
-                            <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">#{order.id.slice(-4)}</span>
-                         </div>
-                         <h4 className="text-xl font-black tracking-tight leading-none">{order.storeName}</h4>
-                       </div>
-                       <div className="text-right">
-                         <p className="text-2xl font-black text-white leading-none">${order.total}</p>
-                         <p className="text-[8px] font-black text-white/20 uppercase mt-1">Total</p>
-                       </div>
-                    </div>
-
-                    <div className="space-y-5 mb-8">
-                      <LocationStep color="bg-green-500" label="Pickup" address={order.pickupLocation.address} />
-                      <LocationStep color="bg-white/20" label="Delivery" address={order.deliveryLocation.address} />
-                    </div>
-
-                    <button 
-                      onClick={() => {
-                        if (order.driverId === user.uid) {
-                          const flow = ['accepted', 'preparing', 'ready', 'on_route', 'delivered'];
-                          const currentIdx = flow.indexOf(order.status);
-                          if (currentIdx < flow.length - 1) handleUpdateStatus(order.id, flow[currentIdx + 1] as any);
-                        } else {
-                          handleUpdateStatus(order.id, 'accepted', true);
-                        }
-                      }}
-                      className={cn(
-                        "w-full py-5 rounded-full font-black uppercase tracking-[0.3em] text-[9px] transition-all flex items-center justify-center gap-3",
-                        order.driverId === user.uid ? "bg-green-500 text-black" : "bg-white text-black hover:bg-green-500"
-                      )}
-                    >
-                      {order.driverId === user.uid ? 'Update Status' : 'Accept Trip'}
-                      <ArrowRight size={14} />
-                    </button>
-                  </motion.div>
-                ))
-              )}
-            </AnimatePresence>
-          </div>
-        </section>
-      </main>
-
-      {/* 🧭 NAVIGATION DOCK - PILL STYLE */}
-      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-        <div className="bg-[#0a0a0a]/90 backdrop-blur-2xl border-[0.5px] border-white/10 rounded-full px-3 py-2 flex items-center gap-1 shadow-2xl">
-           <NavBtn icon={<Zap />} active={view === 'dashboard'} onClick={() => setView('dashboard')} />
-           <NavBtn icon={<History />} active={view === 'history'} onClick={() => setView('history')} />
-           <NavBtn icon={<Wallet />} active={view === 'profile'} onClick={() => setView('profile')} />
-           <NavBtn icon={<UserIcon />} active={view === 'profile'} onClick={() => setView('profile')} />
         </div>
-      </nav>
 
-      {/* 🌑 SIDEBAR - ULTRA THIN */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100]" />
-            <motion.aside initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', damping: 25 }} className="fixed inset-y-0 left-0 w-80 bg-black z-[101] border-r border-white/5 p-10 flex flex-col">
-              <div className="flex items-center justify-between mb-16">
-                 <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-3">
-                    <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+        <AnimatePresence mode="wait">
+          {showWelcome ? (
+            <motion.div
+              key="welcome"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="w-full h-full"
+            >
+              <WelcomeScreen onStart={() => setShowWelcome(false)} />
+            </motion.div>
+          ) : !isLoggedIn ? (
+            /* LOGIN SCREEN */
+            <motion.div 
+              key="login"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+              className="relative z-10 w-full h-full flex flex-col justify-center px-8 pt-16 pb-24"
+            >
+              <div className="text-center mb-10">
+                 <div className="w-28 h-28 mx-auto mb-8 bg-white border-4 border-orange-500 rounded-[2.5rem] flex items-center justify-center overflow-hidden p-3 shadow-xl shadow-orange-500/20 group transition-all duration-500 hover:border-pink-500">
+                    <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                  </div>
-                 <button onClick={() => setSidebarOpen(false)} className="text-white/20"><X size={24} /></button>
+                <h1 className="font-display font-semibold text-3xl leading-tight text-white mb-2">
+                  Portal de<br />Repartidores
+                </h1>
+                <p className="text-pink-200/80 font-light text-sm">Ingresa tus credenciales para comenzar tu ruta</p>
               </div>
-              <div className="flex-1 space-y-2">
-                 <SideBtn icon={<Truck />} label="Terminal" active={view === 'dashboard'} onClick={() => { setView('dashboard'); setSidebarOpen(false); }} />
-                 <SideBtn icon={<History />} label="Historial" active={view === 'history'} onClick={() => { setView('history'); setSidebarOpen(false); }} />
-                 <SideBtn icon={<Wallet />} label="Ganancias" active={view === 'profile'} onClick={() => { setView('profile'); setSidebarOpen(false); }} />
-                 <SideBtn icon={<Settings />} label="Configuración" active={false} />
+
+              <form onSubmit={handleLogin} className="space-y-5">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-white/60 uppercase tracking-wider pl-1">Correo Electrónico</label>
+                  <div className="glass-panel rounded-2xl flex items-center p-4 focus-within:border-pink-400/50 focus-within:shadow-[0_0_15px_rgba(228,41,117,0.2)] transition-all">
+                    <Mail size={20} className="text-white/40 mr-3" />
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="repartidor@delivery.com" 
+                      className="bg-transparent border-none outline-none flex-1 text-base placeholder-white/30 font-light text-white"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-white/60 uppercase tracking-wider pl-1">Contraseña</label>
+                  <div className="glass-panel rounded-2xl flex items-center p-4 focus-within:border-blue-400/50 focus-within:shadow-[0_0_15px_rgba(31,81,255,0.2)] transition-all">
+                    <Lock size={20} className="text-white/40 mr-3" />
+                    <input 
+                      type="password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••" 
+                      className="bg-transparent border-none outline-none flex-1 text-base placeholder-white/30 font-light text-white"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {error && <p className="text-pink-500 text-xs text-center font-medium">{error}</p>}
+
+                <button 
+                  type="submit"
+                  className="w-full mt-4 group relative overflow-hidden bg-gradient-to-r from-pink-600 to-purple-600 p-[2px] rounded-2xl transition-all active:scale-[0.98]"
+                >
+                  <div className="absolute inset-0 bg-white/20 group-hover:bg-transparent transition-all duration-300"></div>
+                  <div className="relative bg-black/20 backdrop-blur-sm rounded-[14px] flex items-center justify-center py-4 w-full h-full gap-2 text-white font-medium tracking-wide">
+                    <span>Iniciar Sesión</span>
+                    <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+              </form>
+            </motion.div>
+          ) : (
+            /* MAIN APP SCREEN (DRIVER DASHBOARD) */
+            <motion.div 
+              key="main"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              className="relative z-10 w-full h-full flex flex-col pt-12"
+            >
+              {/* Top Bar */}
+              <div className="flex justify-between items-center px-6 mb-6 shrink-0">
+                <button className="w-10 h-10 rounded-xl glass-panel flex items-center justify-center relative shadow-lg">
+                  <Bell size={20} className="text-orange-300" />
+                  <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-pink-500 rounded-full shadow-[0_0_8px_#ec4899]"></div>
+                </button>
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 bg-white rounded-full border border-orange-500 flex items-center justify-center overflow-hidden p-0.5 mb-1 shadow-md">
+                    <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+                  </div>
+                  <h1 className="font-display font-bold text-sm leading-tight text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-400 drop-shadow-sm">
+                    Futuristic Mexico<br />Ride Home
+                  </h1>
+                </div>
+                <button className="w-10 h-10 rounded-xl glass-panel flex items-center justify-center text-white/70 shadow-lg" onClick={() => auth.signOut()}>
+                  <Menu size={20} />
+                </button>
               </div>
-              <button onClick={handleLogout} className="mt-auto flex items-center gap-4 p-4 rounded-2xl bg-white/5 text-white/40 font-black uppercase tracking-[0.2em] text-[8px] hover:bg-red-500/10 hover:text-red-500 transition-all">
-                <LogOut size={16} /> Cerrar Sesión
-              </button>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
 
-function LocationStep({ color, label, address }: { color: string, label: string, address: string }) {
-  return (
-    <div className="flex gap-5">
-      <div className="flex flex-col items-center pt-1">
-         <div className={cn("w-2 h-2 rounded-full", color)} />
-         <div className="w-[0.5px] h-full bg-white/5 mt-1" />
+              {/* Available Header */}
+              <div className="px-6 flex justify-between items-end mb-4 shrink-0">
+                <h2 className="text-xl font-bold text-white tracking-wide">Disponibles ahora</h2>
+                <span className="text-xs text-white/70 font-medium mb-1 tracking-wider">{orders.filter(o => o.status === 'pending').length} órdenes cerca</span>
+              </div>
+
+              {/* Map Graphic Mock (Now Real Component) */}
+              <div className="px-6 mb-5 shrink-0">
+                <div className="glass-panel overflow-hidden rounded-[28px] h-36 relative shadow-2xl border border-white/10 group cursor-pointer">
+                  <OrderMap 
+                    order={orders[0] || { deliveryLocation: { lat: 19.4326, lng: -99.1332 } }} 
+                    driverLocation={driverLocation} 
+                  />
+                  {/* Overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
+                  
+                  {/* Badge */}
+                  <div className="absolute top-4 left-4 bg-amber-500/20 border border-amber-500/50 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse shadow-[0_0_8px_#fbbf24]"></div>
+                    <span className="text-[11px] font-semibold tracking-wide text-amber-300">En línea</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order List */}
+              <div className="flex-1 overflow-y-auto hide-scrollbar px-6 space-y-4 pb-32">
+                {orders.map(order => (
+                  <div key={order.id} className="glass-panel p-5 rounded-[24px] relative overflow-hidden group hover:bg-white/10 transition-colors duration-300">
+                    {/* Ambient glow for the card */}
+                    <div className="absolute -right-12 -top-12 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl group-hover:bg-pink-500/30 transition-all"></div>
+                    
+                    <div className="flex justify-between items-center mb-1 relative z-10">
+                      <h3 className="font-bold text-lg text-orange-200/90 tracking-wide">{order.businessName || 'Nuevo Pedido'}</h3>
+                      <span className={`text-[10px] uppercase font-bold px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-inner`}>
+                        {order.status === 'pending' ? 'Express' : order.status}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center text-white/50 text-xs font-medium tracking-wide mb-5 relative z-10">
+                      <Navigation size={12} className="mr-1.5 inline -rotate-45" />
+                      {order.deliveryAddress?.substring(0, 30)}...
+                    </div>
+                    
+                    <div className="flex justify-between items-end relative z-10 border-t border-white/10 pt-4">
+                      <div>
+                        <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-0.5">Pago estimado</p>
+                        <p className="text-2xl font-bold text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.3)]">${order.total}</p>
+                      </div>
+                      
+                      {order.status === 'pending' ? (
+                        <button 
+                          onClick={() => handleUpdateStatus(order.id, 'accepted' as OrderStatus)}
+                          className="bg-gradient-to-tr from-transparent to-white/5 border border-amber-400/50 text-amber-300 px-6 py-2.5 rounded-xl text-sm font-semibold hover:border-amber-400 hover:bg-amber-400/10 active:scale-95 transition-all shadow-[0_0_15px_rgba(251,191,36,0.1)]"
+                        >
+                          Aceptar
+                        </button>
+                      ) : (
+                        <div className="text-cyan-400 text-xs font-bold uppercase tracking-widest px-4 py-2 bg-cyan-400/10 border border-cyan-400/30 rounded-xl">
+                          En Curso
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {orders.length === 0 && (
+                  <div className="glass-panel p-12 text-center rounded-[24px]">
+                    <Package size={48} className="mx-auto mb-4 text-white/10" />
+                    <p className="text-white/30 text-sm font-medium tracking-wide uppercase">No hay pedidos disponibles</p>
+                  </div>
+                )}
+
+                {/* Stats Row */}
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                  <div className="glass-panel p-4 rounded-3xl relative overflow-hidden flex flex-col justify-between">
+                     <div className="absolute -left-6 -top-6 w-20 h-20 bg-cyan-500/20 rounded-full blur-2xl"></div>
+                     <Gauge size={22} className="text-cyan-300 mb-3 relative z-10 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+                     <div>
+                       <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold relative z-10 mb-0.5">Eficiencia</p>
+                       <p className="text-2xl font-display font-bold text-white relative z-10">98%</p>
+                     </div>
+                  </div>
+                  <div className="glass-panel p-4 rounded-3xl relative overflow-hidden flex flex-col justify-between">
+                     <div className="absolute -right-6 -top-6 w-20 h-20 bg-pink-500/20 rounded-full blur-2xl"></div>
+                     <Star size={22} className="text-pink-400 mb-3 relative z-10 drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]" />
+                     <div>
+                       <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold relative z-10 mb-0.5">Rating</p>
+                       <p className="text-2xl font-display font-bold text-white relative z-10">4.9</p>
+                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Navigation */}
+              <div className="absolute bottom-0 w-full glass-panel rounded-t-[32px] border-b-0 border-x-0 pt-5 pb-8 px-10 flex justify-between items-center z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] bg-[#0b1126]/80 backdrop-blur-xl">
+                <button 
+                  onClick={() => setActiveTab('orders')}
+                  className={`flex flex-col items-center gap-1.5 ${activeTab === 'orders' ? 'text-amber-500 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'text-white/40'} group`}
+                >
+                  <Truck size={22} className="group-hover:-translate-y-1 transition-transform" />
+                  <span className="text-[10px] font-bold tracking-wide">Órdenes</span>
+                </button>
+                
+                <button 
+                  onClick={() => setActiveTab('earnings')}
+                  className={`flex flex-col items-center gap-1.5 ${activeTab === 'earnings' ? 'text-amber-500 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'text-white/40'} group`}
+                >
+                  <Wallet size={22} className="group-hover:-translate-y-1 transition-transform" />
+                  <span className="text-[10px] font-medium tracking-wide">Ganancias</span>
+                </button>
+                
+                <button 
+                  onClick={() => setActiveTab('profile')}
+                  className={`flex flex-col items-center gap-1.5 ${activeTab === 'profile' ? 'text-amber-500 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'text-white/40'} group`}
+                >
+                  <User size={22} className="group-hover:-translate-y-1 transition-transform" />
+                  <span className="text-[10px] font-medium tracking-wide">Perfil</span>
+                </button>
+              </div>
+
+              {/* Fake Home Indicator */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-white/40 rounded-full z-40 pointer-events-none"></div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-      <div>
-        <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/20 leading-none mb-1">{label}</p>
-        <p className="text-[11px] font-bold text-white/60 leading-tight">{address}</p>
-      </div>
     </div>
-  );
-}
-
-function NavBtn({ icon, active, onClick }: { icon: React.ReactNode, active: boolean, onClick: () => void }) {
-  return (
-    <button onClick={onClick} className={cn("w-12 h-12 rounded-full flex items-center justify-center transition-all", active ? "bg-white text-black shadow-lg shadow-white/5" : "text-white/20")}>
-      {React.cloneElement(icon as React.ReactElement, { size: 18, strokeWidth: 1.5 })}
-    </button>
-  );
-}
-
-function SideBtn({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active: boolean, onClick?: () => void }) {
-  return (
-    <button onClick={onClick} className={cn("w-full flex items-center gap-5 p-5 rounded-2xl transition-all font-black uppercase tracking-[0.3em] text-[8px]", active ? "bg-green-500 text-black" : "text-white/30 hover:bg-white/5 hover:text-white")}>
-      {React.cloneElement(icon as React.ReactElement, { size: 16, strokeWidth: 2 })}
-      {label}
-    </button>
   );
 }
