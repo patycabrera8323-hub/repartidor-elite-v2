@@ -90,6 +90,54 @@ export default function App() {
     } catch (err) { console.error(err); }
   };
 
+  const getStatusLabelAndAction = (order: Order) => {
+    switch (order.status) {
+      case 'pending':
+        return {
+          label: 'Aceptar',
+          actionStatus: 'accepted' as OrderStatus,
+          color: 'border-amber-400/50 text-amber-300 hover:border-amber-400 hover:bg-amber-400/10'
+        };
+      case 'accepted':
+        return {
+          label: 'Llegué a Negocio',
+          actionStatus: 'preparing' as OrderStatus,
+          color: 'border-cyan-400/50 text-cyan-300 hover:border-cyan-400 hover:bg-cyan-400/10'
+        };
+      case 'preparing':
+        return {
+          label: 'Marcar Listo',
+          actionStatus: 'ready' as OrderStatus,
+          color: 'border-pink-400/50 text-pink-300 hover:border-pink-400 hover:bg-pink-400/10'
+        };
+      case 'ready':
+        return {
+          label: 'Iniciar Entrega',
+          actionStatus: 'on_route' as OrderStatus,
+          color: 'border-orange-400/50 text-orange-300 hover:border-orange-400 hover:bg-orange-400/10'
+        };
+      case 'on_route':
+        return {
+          label: 'Entregar Pedido',
+          actionStatus: 'delivered' as OrderStatus,
+          color: 'border-emerald-400/50 text-emerald-300 hover:border-emerald-400 hover:bg-emerald-400/10'
+        };
+      case 'delivered':
+      case 'completed':
+        return {
+          label: 'Entregado ✓',
+          actionStatus: null,
+          color: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+        };
+      default:
+        return {
+          label: 'En Curso',
+          actionStatus: null,
+          color: 'bg-cyan-400/10 border-cyan-400/30 text-cyan-400'
+        };
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-[#0b1126] flex items-center justify-center">
       <div className="w-12 h-12 border-4 border-pink-500/20 border-t-pink-500 rounded-full animate-spin" />
@@ -217,98 +265,208 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Available Header */}
-              <div className="px-6 flex justify-between items-end mb-4 shrink-0">
-                <h2 className="text-xl font-bold text-white tracking-wide">Disponibles ahora</h2>
-                <span className="text-xs text-white/70 font-medium mb-1 tracking-wider">{orders.filter(o => o.status === 'pending').length} órdenes cerca</span>
-              </div>
-
-              {/* Map Graphic Mock (Now Real Component) */}
-              <div className="px-6 mb-5 shrink-0">
-                <div className="glass-panel overflow-hidden rounded-[28px] h-36 relative shadow-2xl border border-white/10 group cursor-pointer">
-                  <OrderMap 
-                    order={orders[0] || { deliveryLocation: { lat: 19.4326, lng: -99.1332 } }} 
-                    driverLocation={driverLocation} 
-                  />
-                  {/* Overlay gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
-                  
-                  {/* Badge */}
-                  <div className="absolute top-4 left-4 bg-amber-500/20 border border-amber-500/50 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
-                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse shadow-[0_0_8px_#fbbf24]"></div>
-                    <span className="text-[11px] font-semibold tracking-wide text-amber-300">En línea</span>
+              {activeTab === 'orders' ? (
+                <>
+                  {/* Available Header */}
+                  <div className="px-6 flex justify-between items-end mb-4 shrink-0">
+                    <h2 className="text-xl font-bold text-white tracking-wide">Disponibles ahora</h2>
+                    <span className="text-xs text-white/70 font-medium mb-1 tracking-wider">{orders.filter(o => o.status === 'pending').length} órdenes cerca</span>
                   </div>
-                </div>
-              </div>
 
-              {/* Order List */}
-              <div className="flex-1 overflow-y-auto hide-scrollbar px-6 space-y-4 pb-32">
-                {orders.map(order => (
-                  <div key={order.id} className="glass-panel p-5 rounded-[24px] relative overflow-hidden group hover:bg-white/10 transition-colors duration-300">
-                    {/* Ambient glow for the card */}
-                    <div className="absolute -right-12 -top-12 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl group-hover:bg-pink-500/30 transition-all"></div>
-                    
-                    <div className="flex justify-between items-center mb-1 relative z-10">
-                      <h3 className="font-bold text-lg text-orange-200/90 tracking-wide">{order.businessName || 'Nuevo Pedido'}</h3>
-                      <span className={`text-[10px] uppercase font-bold px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-inner`}>
-                        {order.status === 'pending' ? 'Express' : order.status}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center text-white/50 text-xs font-medium tracking-wide mb-5 relative z-10">
-                      <Navigation size={12} className="mr-1.5 inline -rotate-45" />
-                      {order.deliveryAddress?.substring(0, 30)}...
-                    </div>
-                    
-                    <div className="flex justify-between items-end relative z-10 border-t border-white/10 pt-4">
-                      <div>
-                        <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-0.5">Pago estimado</p>
-                        <p className="text-2xl font-bold text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.3)]">${order.total}</p>
-                      </div>
+                  {/* Map Graphic Mock */}
+                  <div className="px-6 mb-5 shrink-0">
+                    <div className="glass-panel overflow-hidden rounded-[28px] h-36 relative shadow-2xl border border-white/10 group cursor-pointer">
+                      <OrderMap 
+                        order={orders[0] || { deliveryLocation: { lat: 19.4326, lng: -99.1332 } }} 
+                        driverLocation={driverLocation} 
+                      />
+                      {/* Overlay gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
                       
-                      {order.status === 'pending' ? (
-                        <button 
-                          onClick={() => handleUpdateStatus(order.id, 'accepted' as OrderStatus)}
-                          className="bg-gradient-to-tr from-transparent to-white/5 border border-amber-400/50 text-amber-300 px-6 py-2.5 rounded-xl text-sm font-semibold hover:border-amber-400 hover:bg-amber-400/10 active:scale-95 transition-all shadow-[0_0_15px_rgba(251,191,36,0.1)]"
-                        >
-                          Aceptar
-                        </button>
-                      ) : (
-                        <div className="text-cyan-400 text-xs font-bold uppercase tracking-widest px-4 py-2 bg-cyan-400/10 border border-cyan-400/30 rounded-xl">
-                          En Curso
-                        </div>
-                      )}
+                      {/* Badge */}
+                      <div className="absolute top-4 left-4 bg-amber-500/20 border border-amber-500/50 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+                        <div className="w-2.5 h-2.5 bg-amber-400 rounded-full animate-pulse shadow-[0_0_8px_#fbbf24]"></div>
+                        <span className="text-[11px] font-semibold tracking-wide text-amber-300">En línea</span>
+                      </div>
                     </div>
                   </div>
-                ))}
 
-                {orders.length === 0 && (
-                  <div className="glass-panel p-12 text-center rounded-[24px]">
-                    <Package size={48} className="mx-auto mb-4 text-white/10" />
-                    <p className="text-white/30 text-sm font-medium tracking-wide uppercase">No hay pedidos disponibles</p>
-                  </div>
-                )}
+                  {/* Order List */}
+                  <div className="flex-1 overflow-y-auto hide-scrollbar px-6 space-y-4 pb-32">
+                    {orders.map(order => (
+                      <div key={order.id} className="glass-panel p-5 rounded-[24px] relative overflow-hidden group hover:bg-white/10 transition-colors duration-300">
+                        {/* Ambient glow for the card */}
+                        <div className="absolute -right-12 -top-12 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl group-hover:bg-pink-500/30 transition-all"></div>
+                        
+                        <div className="flex justify-between items-center mb-1 relative z-10">
+                          <h3 className="font-bold text-lg text-orange-200/90 tracking-wide">{order.businessName || 'Nuevo Pedido'}</h3>
+                          <span className={`text-[10px] uppercase font-bold px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-inner`}>
+                            {order.status === 'pending' ? 'Express' : order.status}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center text-white/50 text-xs font-medium tracking-wide mb-5 relative z-10">
+                          <Navigation size={12} className="mr-1.5 inline -rotate-45" />
+                          {order.deliveryAddress?.substring(0, 30)}...
+                        </div>
+                        
+                        <div className="flex justify-between items-end relative z-10 border-t border-white/10 pt-4">
+                          <div>
+                            <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-0.5">Pago estimado</p>
+                            <p className="text-2xl font-bold text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.3)]">${order.total}</p>
+                          </div>
+                          
+                          {(() => {
+                            const btn = getStatusLabelAndAction(order);
+                            if (btn.actionStatus) {
+                              return (
+                                <button 
+                                  onClick={() => handleUpdateStatus(order.id, btn.actionStatus!)}
+                                  className={`bg-gradient-to-tr from-transparent to-white/5 border ${btn.color} px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all shadow-md`}
+                                >
+                                  {btn.label}
+                                </button>
+                              );
+                            } else {
+                              return (
+                                <div className={`${btn.color} text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 border rounded-xl shadow-inner`}>
+                                  {btn.label}
+                                </div>
+                              );
+                            }
+                          })()}
+                        </div>
+                      </div>
+                    ))}
 
-                {/* Stats Row */}
-                <div className="grid grid-cols-2 gap-4 mt-6">
-                  <div className="glass-panel p-4 rounded-3xl relative overflow-hidden flex flex-col justify-between">
-                     <div className="absolute -left-6 -top-6 w-20 h-20 bg-cyan-500/20 rounded-full blur-2xl"></div>
-                     <Gauge size={22} className="text-cyan-300 mb-3 relative z-10 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
-                     <div>
-                       <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold relative z-10 mb-0.5">Eficiencia</p>
-                       <p className="text-2xl font-display font-bold text-white relative z-10">98%</p>
-                     </div>
+                    {orders.length === 0 && (
+                      <div className="glass-panel p-12 text-center rounded-[24px]">
+                        <Package size={48} className="mx-auto mb-4 text-white/10" />
+                        <p className="text-white/30 text-sm font-medium tracking-wide uppercase">No hay pedidos disponibles</p>
+                      </div>
+                    )}
+
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-2 gap-4 mt-6">
+                      <div className="glass-panel p-4 rounded-3xl relative overflow-hidden flex flex-col justify-between">
+                         <div className="absolute -left-6 -top-6 w-20 h-20 bg-cyan-500/20 rounded-full blur-2xl"></div>
+                         <Gauge size={22} className="text-cyan-300 mb-3 relative z-10 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+                         <div>
+                           <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold relative z-10 mb-0.5">Eficiencia</p>
+                           <p className="text-2xl font-display font-bold text-white relative z-10">98%</p>
+                         </div>
+                      </div>
+                      <div className="glass-panel p-4 rounded-3xl relative overflow-hidden flex flex-col justify-between">
+                         <div className="absolute -right-6 -top-6 w-20 h-20 bg-pink-500/20 rounded-full blur-2xl"></div>
+                         <Star size={22} className="text-pink-400 mb-3 relative z-10 drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]" />
+                         <div>
+                           <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold relative z-10 mb-0.5">Rating</p>
+                           <p className="text-2xl font-display font-bold text-white relative z-10">4.9</p>
+                         </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="glass-panel p-4 rounded-3xl relative overflow-hidden flex flex-col justify-between">
-                     <div className="absolute -right-6 -top-6 w-20 h-20 bg-pink-500/20 rounded-full blur-2xl"></div>
-                     <Star size={22} className="text-pink-400 mb-3 relative z-10 drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]" />
-                     <div>
-                       <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold relative z-10 mb-0.5">Rating</p>
-                       <p className="text-2xl font-display font-bold text-white relative z-10">4.9</p>
-                     </div>
+                </>
+              ) : activeTab === 'earnings' ? (
+                /* EARNINGS TAB VIEW */
+                <div className="flex-1 overflow-y-auto hide-scrollbar px-6 space-y-6 pb-32">
+                  {/* Total Earnings Card */}
+                  <div className="glass-panel p-6 rounded-[28px] relative overflow-hidden bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 shadow-2xl mt-2">
+                    <div className="absolute -right-12 -top-12 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl"></div>
+                    <p className="text-xs text-white/50 font-bold uppercase tracking-widest mb-1">Mis Ganancias</p>
+                    <p className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-400 drop-shadow-[0_0_15px_rgba(228,41,117,0.3)]">$2,450.60</p>
+                    <p className="text-[10px] text-emerald-400 font-bold mt-2 flex items-center gap-1">
+                      <span>+14.5%</span> esta semana
+                    </p>
+                  </div>
+
+                  {/* Weekly Stats */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="glass-panel p-4 rounded-3xl">
+                      <p className="text-[9px] text-white/40 uppercase tracking-widest font-black mb-1">Entregas</p>
+                      <p className="text-xl font-bold text-white">42 viajes</p>
+                    </div>
+                    <div className="glass-panel p-4 rounded-3xl">
+                      <p className="text-[9px] text-white/40 uppercase tracking-widest font-black mb-1">Horas Online</p>
+                      <p className="text-xl font-bold text-white">28.5 hrs</p>
+                    </div>
+                  </div>
+
+                  {/* Transaction History */}
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wider pl-1">Historial Reciente</h3>
+                    
+                    <div className="glass-panel p-4 rounded-2xl flex justify-between items-center">
+                      <div>
+                        <p className="text-xs font-bold text-white">Pedido #29402</p>
+                        <p className="text-[10px] text-white/40 font-medium">17 May, 2026 - 19:42</p>
+                      </div>
+                      <p className="text-sm font-bold text-emerald-400">+$141.60</p>
+                    </div>
+
+                    <div className="glass-panel p-4 rounded-2xl flex justify-between items-center">
+                      <div>
+                        <p className="text-xs font-bold text-white">Pedido #29384</p>
+                        <p className="text-[10px] text-white/40 font-medium">17 May, 2026 - 15:30</p>
+                      </div>
+                      <p className="text-sm font-bold text-emerald-400">+$105.00</p>
+                    </div>
+
+                    <div className="glass-panel p-4 rounded-2xl flex justify-between items-center">
+                      <div>
+                        <p className="text-xs font-bold text-white">Pedido #29311</p>
+                        <p className="text-[10px] text-white/40 font-medium">16 May, 2026 - 21:10</p>
+                      </div>
+                      <p className="text-sm font-bold text-emerald-400">+$182.00</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                /* PROFILE TAB VIEW */
+                <div className="flex-1 overflow-y-auto hide-scrollbar px-6 space-y-6 pb-32">
+                  {/* Profile Card */}
+                  <div className="glass-panel p-6 rounded-[28px] flex items-center gap-4 relative overflow-hidden mt-2">
+                    <div className="w-14 h-14 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center border border-white/20 shadow-lg shrink-0">
+                      <User size={24} className="text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-base text-white">Repartidor Elite</h3>
+                      <p className="text-xs text-pink-300 font-medium">Socio Conductor #102</p>
+                      <p className="text-[10px] text-white/40 font-medium mt-0.5">{user?.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Vehicle & Settings */}
+                  <div className="glass-panel p-5 rounded-[24px] space-y-3">
+                    <h4 className="text-[10px] font-black text-white uppercase tracking-wider border-b border-white/5 pb-2">Información del vehículo</h4>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-white/50">Tipo</span>
+                      <span className="font-bold text-white">Motocicleta - 125cc</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-white/50">Placas</span>
+                      <span className="font-bold text-white">MX-49-ELITE</span>
+                    </div>
+                  </div>
+
+                  {/* Buttons Actions */}
+                  <div className="space-y-3">
+                    <button 
+                      onClick={() => alert("Función para editar perfil próximamente.")}
+                      className="w-full py-4 glass-panel rounded-2xl text-xs font-bold uppercase tracking-wider text-white hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer text-center"
+                    >
+                      Editar Datos de Perfil
+                    </button>
+
+                    <button 
+                      onClick={() => auth.signOut()}
+                      className="w-full py-4 bg-red-500/10 border border-red-500/30 rounded-2xl text-xs font-bold uppercase tracking-wider text-red-400 hover:bg-red-500/20 active:scale-[0.98] transition-all cursor-pointer text-center"
+                    >
+                      Cerrar Sesión
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Bottom Navigation */}
               <div className="absolute bottom-0 w-full glass-panel rounded-t-[32px] border-b-0 border-x-0 pt-5 pb-8 px-10 flex justify-between items-center z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] bg-[#0b1126]/80 backdrop-blur-xl">

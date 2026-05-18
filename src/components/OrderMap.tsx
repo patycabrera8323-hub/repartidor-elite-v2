@@ -55,7 +55,7 @@ export default function OrderMap({ order, driverLocation }: OrderMapProps) {
 
   if (!API_KEY) {
     return (
-      <div className="w-full h-56 glass rounded-[2.5rem] border border-white/5 flex flex-col items-center justify-center p-8 text-center space-y-4">
+      <div className="w-full h-full glass rounded-[2.5rem] border border-white/5 flex flex-col items-center justify-center p-8 text-center space-y-4">
         <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center text-white/5">
            <Pin background="transparent" glyphColor="currentColor" />
         </div>
@@ -65,7 +65,7 @@ export default function OrderMap({ order, driverLocation }: OrderMapProps) {
   }
 
   return (
-    <div className="w-full h-72 glass rounded-[3rem] border border-white/10 overflow-hidden relative shadow-2xl">
+    <div className="w-full h-full glass rounded-[3rem] border border-white/10 overflow-hidden relative shadow-2xl">
       <APIProvider apiKey={API_KEY} version="weekly">
         <Map
           defaultCenter={center}
