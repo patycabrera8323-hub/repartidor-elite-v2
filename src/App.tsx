@@ -143,8 +143,8 @@ export default function App() {
               className="relative z-10 w-full h-full flex flex-col justify-center px-8 pt-16 pb-24"
             >
               <div className="text-center mb-10">
-                 <div className="w-28 h-28 mx-auto mb-8 bg-white border-4 border-orange-500 rounded-[2.5rem] flex items-center justify-center overflow-hidden p-3 shadow-xl shadow-orange-500/20 group transition-all duration-500 hover:border-pink-500">
-                    <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+                 <div className="w-28 h-28 mx-auto mb-8 glass-panel-glow rounded-[2rem] flex items-center justify-center overflow-hidden p-3 border-2 border-pink-500/50 shadow-[0_0_25px_rgba(228,41,117,0.3)] group transition-all duration-500 hover:border-pink-400">
+                    <img src="/logo.png" className="w-[85%] h-[85%] object-contain" alt="Logo" />
                  </div>
                 <h1 className="font-display font-semibold text-3xl leading-tight text-white mb-2">
                   Portal de<br />Repartidores
@@ -213,7 +213,7 @@ export default function App() {
                   <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-pink-500 rounded-full shadow-[0_0_8px_#ec4899]"></div>
                 </button>
                 <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 bg-white rounded-full border border-orange-500 flex items-center justify-center overflow-hidden p-0.5 mb-1 shadow-md">
+                  <div className="w-8 h-8 glass-panel-glow rounded-full border border-pink-500/50 flex items-center justify-center overflow-hidden p-1 mb-1 shadow-[0_0_10px_rgba(228,41,117,0.2)]">
                     <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                   </div>
                   <h1 className="font-display font-bold text-sm leading-tight text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-400 drop-shadow-sm">
