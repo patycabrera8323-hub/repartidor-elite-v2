@@ -67,6 +67,9 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  will-change: transform, opacity;
+  transform: translate3d(0,0,0);
+  -webkit-transform: translate3d(0,0,0);
 }
 
 .glass-panel-glow {
@@ -75,6 +78,9 @@ body {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(228, 41, 117, 0.4);
   box-shadow: 0 0 20px 0 rgba(228, 41, 117, 0.2);
+  will-change: transform, opacity;
+  transform: translate3d(0,0,0);
+  -webkit-transform: translate3d(0,0,0);
 }
 
 /* Hide scrollbar for horizontal car list */

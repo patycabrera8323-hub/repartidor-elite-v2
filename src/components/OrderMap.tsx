@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, memo } from 'react';
 import { APIProvider, Map, AdvancedMarker, Pin, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { Order } from '../types';
 
@@ -50,7 +50,7 @@ function RouteDisplay({ origin, destination }: {
   return null;
 }
 
-export default function OrderMap({ order, driverLocation }: OrderMapProps) {
+function OrderMap({ order, driverLocation }: OrderMapProps) {
   const [center] = useState(order.deliveryLocation);
 
   if (!API_KEY) {
@@ -129,3 +129,12 @@ export default function OrderMap({ order, driverLocation }: OrderMapProps) {
     </div>
   );
 }
+
+export default memo(OrderMap, (prevProps, nextProps) => {
+  return (
+    prevProps.order?.id === nextProps.order?.id &&
+    prevProps.order?.status === nextProps.order?.status &&
+    prevProps.driverLocation?.lat === nextProps.driverLocation?.lat &&
+    prevProps.driverLocation?.lng === nextProps.driverLocation?.lng
+  );
+});
