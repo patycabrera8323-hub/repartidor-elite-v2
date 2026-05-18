@@ -144,7 +144,7 @@ export default function App() {
             >
               <div className="text-center mb-10">
                  <div className="w-28 h-28 mx-auto mb-8 glass-panel-glow rounded-[2rem] flex items-center justify-center overflow-hidden p-3 border-2 border-pink-500/50 shadow-[0_0_25px_rgba(228,41,117,0.3)] group transition-all duration-500 hover:border-pink-400">
-                    <img src="/logo.png" className="w-[85%] h-[85%] object-contain" alt="Logo" />
+                    <img src="/logo.png?v=2" className="w-[85%] h-[85%] object-contain" alt="Logo" />
                  </div>
                 <h1 className="font-display font-semibold text-3xl leading-tight text-white mb-2">
                   Portal de<br />Repartidores
@@ -214,7 +214,7 @@ export default function App() {
                 </button>
                 <div className="flex flex-col items-center">
                   <div className="w-8 h-8 glass-panel-glow rounded-full border border-pink-500/50 flex items-center justify-center overflow-hidden p-1 mb-1 shadow-[0_0_10px_rgba(228,41,117,0.2)]">
-                    <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+                    <img src="/logo.png?v=2" className="w-full h-full object-contain" alt="Logo" />
                   </div>
                   <h1 className="font-display font-bold text-sm leading-tight text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-400 drop-shadow-sm">
                     Futuristic Mexico<br />Ride Home

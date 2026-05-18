@@ -70,7 +70,7 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
               className="relative mb-6"
             >
               <div className="w-20 h-20 glass-panel-glow rounded-[1.8rem] flex items-center justify-center overflow-hidden p-3 border-2 border-pink-500/50 shadow-[0_0_25px_rgba(228,41,117,0.4)]">
-                <img src="/logo.png" alt="Logo" className="w-[85%] h-[85%] object-contain" />
+                <img src="/logo.png?v=2" alt="Logo" className="w-[85%] h-[85%] object-contain" />
               </div>
               <motion.div
                 animate={{ rotate: 360 }}
